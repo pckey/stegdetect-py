@@ -1,0 +1,21 @@
+[project]
+name = "stegdetect"
+version = "1.0.0"
+description = "Python rewrite of stegdetect - automated tool for detecting steganographic content in JPEG images"
+readme = "README.md"
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.9"
+dependencies = [
+    "Pillow>=9.0",
+    "numpy>=1.22",
+    "pycryptodome>=3.23.0",
+    "scipy>=1.8",
+]
+
+[project.optional-dependencies]
+crack = [
+    "pycryptodome>=3.15",
+]
+dev = [
+    "pytest>=7.0",
+]
