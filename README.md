@@ -1,100 +1,102 @@
-# Stegdetect Python 重写版
+[English](https://github.com/vu1Art1st/stegdetect-py/blob/main/README.md)| [简体中文](https://github.com/vu1Art1st/stegdetect-py/blob/main/README_CN.md)
 
-Stegdetect 的纯 Python 重写，用于自动检测 JPEG 图像中的隐写内容。基于 Niels Provos 原始 C 语言实现的算法，使用卡方分析和 DCT 系数统计特征进行隐写检测。
+# Stegdetect Python Rewrite
 
-## 功能特性
+A pure Python rewrite of Stegdetect, designed for automated detection of steganographic content in JPEG images. Based on the algorithms from Niels Provos' original C implementation, it uses chi-square analysis and DCT coefficient statistical features for steganalysis.
 
-- **多算法隐写检测** -- 支持 JSteg、Outguess、JPHide、Invisible Secrets、F5 五种主流 JPEG 隐写工具的检测
-- **Fisher LDA 分类器** -- 基于特征提取变换和线性判别分析的分类检测
-- **字典攻击破解** -- 支持对 JPHide (Blowfish)、JSteg (ARC4)、Outguess (ARC4) 的密码字典攻击
-- **DCT 系数提取** -- 完整的 JPEG 位流解析，提取量化表和 DCT 系数
-- **图像对比分析** -- 比较原始图像与隐写图像的 DCT 系数差异
-- **JPHide 数据擦除** -- 移除 JPHide 嵌入的隐写数据
-- **特征提取变换** -- 样条变换、梯度变换、粗糙度变换、差值平方变换
-- **纯 Python 实现** -- 无需编译，跨平台运行
+## Features
 
-## 快速开始
+- **Multi-Algorithm Steganalysis** — Detection support for five major JPEG steganography tools: JSteg, Outguess, JPHide, Invisible Secrets, and F5
+- **Fisher LDA Classifier** — Classification-based detection using feature extraction transforms and linear discriminant analysis
+- **Dictionary Attack Cracking** — Password dictionary attacks against JPHide (Blowfish), JSteg (ARC4), and Outguess (ARC4)
+- **DCT Coefficient Extraction** — Full JPEG bitstream parsing with quantization table and DCT coefficient extraction
+- **Image Comparison Analysis** — Compare DCT coefficient differences between original and stego images
+- **JPHide Data Removal** — Remove steganographic data embedded by JPHide
+- **Feature Extraction Transforms** — Spline transform, gradient transform, roughness transform, diffsquare transform
+- **Pure Python Implementation** — No compilation required, runs cross-platform
 
-本项目无需安装，使用 [uv](https://docs.astral.sh/uv/) 直接运行即可。uv 会根据 `pyproject.toml` 自动创建虚拟环境并安装依赖。
+## Quick Start
+
+No installation needed — run directly with [uv](https://docs.astral.sh/uv/). uv automatically creates a virtual environment and installs dependencies based on `pyproject.toml`.
 
 ```bash
-# 检测单张图像（首次运行会自动拉取依赖）
+# Detect a single image (dependencies pulled automatically on first run)
 uv run stegdetect.py image.jpg
 ```
 
-> 如需密码破解功能（JPHide Blowfish 解密），附加 `--extra crack` 以安装 `pycryptodome`：
+> For password cracking support (JPHide Blowfish decryption), add `--extra crack` to install `pycryptodome`:
 > ```bash
 > uv run --extra crack stegbreak.py -f wordlist.txt image.jpg
 > ```
 
-## 命令行工具
+## Command-Line Tools
 
-### stegdetect -- 隐写检测
+### stegdetect — Steganalysis Detection
 
 ```bash
-# 检测单个文件（使用所有检测器）
+# Detect a single file (all detectors)
 uv run stegdetect.py image.jpg
 
-# 检测多个文件
+# Detect multiple files
 uv run stegdetect.py image1.jpg image2.jpg image3.jpg
 
-# 仅检测特定类型
-uv run stegdetect.py -t j image.jpg          # 仅 JSteg
-uv run stegdetect.py -t o image.jpg          # 仅 Outguess
-uv run stegdetect.py -t p image.jpg          # 仅 JPHide
-uv run stegdetect.py -t i image.jpg          # 仅 Invisible Secrets
-uv run stegdetect.py -t f image.jpg          # 仅 F5
-uv run stegdetect.py -t jopfi image.jpg      # 组合多种类型
+# Detect specific types only
+uv run stegdetect.py -t j image.jpg          # JSteg only
+uv run stegdetect.py -t o image.jpg          # Outguess only
+uv run stegdetect.py -t p image.jpg          # JPHide only
+uv run stegdetect.py -t i image.jpg          # Invisible Secrets only
+uv run stegdetect.py -t f image.jpg          # F5 only
+uv run stegdetect.py -t jopfi image.jpg      # Combined types
 
-# 调整灵敏度（默认 1.0，值越大越敏感）
+# Adjust sensitivity (default 1.0, higher = more sensitive)
 uv run stegdetect.py -s 2.0 image.jpg
 
-# 详细输出
+# Verbose output
 uv run stegdetect.py -v image.jpg
 
-# 显示版本
+# Show version
 uv run stegdetect.py -V
 ```
 
-输出示例：
+Example output:
 
 ```
 image.jpg: "jsteg" (probably, 4096 bits)
 image.jpg: "outguess" (possibly)
 ```
 
-### stegbreak -- 密码字典攻击
+### stegbreak — Password Dictionary Attack
 
 ```bash
-# 自动检测隐写类型并尝试破解（需 --extra crack）
+# Auto-detect stego type and attempt cracking (requires --extra crack)
 uv run --extra crack stegbreak.py -f wordlist.txt image.jpg
 
-# 指定隐写类型
+# Specify stego type
 uv run --extra crack stegbreak.py -f wordlist.txt -t jphide image.jpg
 uv run --extra crack stegbreak.py -f wordlist.txt -t jsteg image.jpg
 uv run --extra crack stegbreak.py -f wordlist.txt -t outguess image.jpg
 
-# 详细输出
+# Verbose output
 uv run --extra crack stegbreak.py -f wordlist.txt -v image.jpg
 ```
 
-输出示例：
+Example output:
 
 ```
 image.jpg: password="secret123" (jphide, v5, length=2048)
 ```
 
-### stegcompare -- 图像对比
+### stegcompare — Image Comparison
 
 ```bash
-# 比较原始图像与隐写图像
+# Compare original image with stego image
 uv run stegcompare.py original.jpg stego.jpg
 
-# 显示差异直方图
+# Show difference histogram
 uv run stegcompare.py -v original.jpg stego.jpg
 ```
 
-输出示例：
+Example output:
 
 ```
 Total coefficients: 524288
@@ -105,14 +107,14 @@ Difference histogram:
    +1: 6173
 ```
 
-### stegdeimage -- JPHide 数据擦除
+### stegdeimage — JPHide Data Removal
 
 ```bash
-# 移除 JPHide 隐写数据
+# Remove JPHide steganographic data
 uv run stegdeimage.py stego.jpg output.jpg
 ```
 
-输出示例：
+Example output:
 
 ```
 Modified 8432 coefficients
@@ -122,28 +124,28 @@ Note: Full lossless DCT restoration requires JPEG re-encoding infrastructure
 
 ## Python API
 
-### 隐写检测
+### Steganalysis Detection
 
 ```python
 from stegdetect.detectors import detect, FLAG_JSTEG, FLAG_OUTGUESS, FLAG_JPHIDE
 
-# 检测图像
+# Detect an image
 results = detect("image.jpg")
 
 for r in results:
-    print(f"类型: {r.stego_type}")
-    print(f"置信度: {r.confidence:.4f}")
-    print(f"估计嵌入位数: {r.estimated_bits}")
-    print(f"详情: {r.details}")
+    print(f"Type: {r.stego_type}")
+    print(f"Confidence: {r.confidence:.4f}")
+    print(f"Estimated embedded bits: {r.estimated_bits}")
+    print(f"Details: {r.details}")
 
-# 仅检测特定类型
+# Detect specific types only
 results = detect("image.jpg", flags=FLAG_JSTEG | FLAG_JPHIDE)
 
-# 调整灵敏度
+# Adjust sensitivity
 results = detect("image.jpg", scale=2.0)
 ```
 
-### 密码破解
+### Password Cracking
 
 ```python
 from stegdetect.stegbreak import crack_file
@@ -151,152 +153,152 @@ from stegdetect.stegbreak import crack_file
 result = crack_file("image.jpg", "wordlist.txt", stego_type="auto")
 
 if result and result.success:
-    print(f"密码: {result.password}")
-    print(f"隐写类型: {result.stego_type}")
-    print(f"详情: {result.details}")
+    print(f"Password: {result.password}")
+    print(f"Stego type: {result.stego_type}")
+    print(f"Details: {result.details}")
 ```
 
-### DCT 系数提取
+### DCT Coefficient Extraction
 
 ```python
 from stegdetect.jpeg_dct import read_jpeg, coefficient_stats
 
-# 读取 JPEG 文件并提取 DCT 系数
+# Read JPEG file and extract DCT coefficients
 info = read_jpeg("image.jpg")
 
-print(f"图像尺寸: {info.width}x{info.height}")
-print(f"组件数: {info.num_components}")
+print(f"Image size: {info.width}x{info.height}")
+print(f"Number of components: {info.num_components}")
 
-# 查看系数统计
+# View coefficient statistics
 stats = coefficient_stats(info)
-print(f"总块数: {stats['total_blocks']}")
-print(f"非零 AC 系数: {stats['nonzero_ac']}")
-print(f"JSteg 容量: {stats['capacity_jsteg']} 位")
+print(f"Total blocks: {stats['total_blocks']}")
+print(f"Non-zero AC coefficients: {stats['nonzero_ac']}")
+print(f"JSteg capacity: {stats['capacity_jsteg']} bits")
 
-# 访问单个块的系数
-comp = info.components[0]  # 亮度分量
-print(f"块数: {comp.blocks_x}x{comp.blocks_y}")
-print(f"第一个块的 DC 系数: {comp.coeffs[0, 0, 0]}")
-print(f"第一个块的 AC 系数: {comp.coeffs[0, 0, 1:10]}")
+# Access individual block coefficients
+comp = info.components[0]  # Luminance component
+print(f"Blocks: {comp.blocks_x}x{comp.blocks_y}")
+print(f"DC coefficient of first block: {comp.coeffs[0, 0, 0]}")
+print(f"AC coefficients of first block: {comp.coeffs[0, 0, 1:10]}")
 ```
 
-### 特征提取
+### Feature Extraction
 
 ```python
 from stegdetect.extraction import extract_features
 
-# 使用样条变换提取特征（72 维特征向量）
+# Extract features using spline transform (72-dim feature vector)
 features = extract_features("image.jpg", transform_name="spline")
 
-# 可用的变换: spline, gradient, roughness, diffsquare
+# Available transforms: spline, gradient, roughness, diffsquare
 gradient_features = extract_features("image.jpg", transform_name="gradient")
 roughness_features = extract_features("image.jpg", transform_name="roughness")
 diffsquare_features = extract_features("image.jpg", transform_name="diffsquare")
 ```
 
-### Fisher LDA 分类器
+### Fisher LDA Classifier
 
 ```python
 from stegdetect.discrimination import fisher_lda_train, fisher_lda_classify
 from stegdetect.extraction import extract_features
 
-# 准备训练数据
+# Prepare training data
 stego_features = [extract_features(f, "spline") for f in stego_files]
 clean_features = [extract_features(f, "spline") for f in clean_files]
 
-# 训练分类器
+# Train classifier
 classifier = fisher_lda_train(stego_features, clean_features)
 
-# 分类
+# Classify
 features = extract_features("unknown.jpg", "spline")
 is_stego, confidence = fisher_lda_classify(classifier, features)
-print(f"是否含隐写: {is_stego}, 置信度: {confidence:.4f}")
+print(f"Contains stego: {is_stego}, Confidence: {confidence:.4f}")
 ```
 
-## Outguess 检测优化
+## Outguess Detection Optimization
 
-针对小图片（低分辨率、DCT 系数少）的 Outguess 检测进行了专门优化。原始算法在直方图稀疏时因过度丢弃 pair 而失效，优化后采用**多策略融合检测**：
+Specialized optimization for Outguess detection on small images (low resolution, few DCT coefficients). The original algorithm fails when the histogram is sparse due to excessive pair discarding. The optimized version uses **multi-strategy fusion detection**:
 
-### 优化策略
+### Optimization Strategies
 
-1. **宽松 Pair 配对** (`unify_outguess_relaxed`) — 仅丢弃双方都为零的 pair，避免稀疏直方图下 `theo` 为空
-2. **LSB chi-square 分析** — 多窗口尺寸滑动检测 LSB 分布异常
-3. **Pair 不对称性分析** — 检测嵌入导致的相邻直方图 bin 失衡
-4. **RS (Regular-Singular) 分析** — 检测 LSB 翻转对系数平滑度的影响
-5. **LSB 随机性测试** — runs test 检测 LSB 序列的随机性
+1. **Relaxed Pair Unification** (`unify_outguess_relaxed`) — Only discards pairs where both sides are zero, preventing empty `theo` in sparse histograms
+2. **LSB Chi-Square Analysis** — Multi-window sliding detection of LSB distribution anomalies
+3. **Pair Asymmetry Analysis** — Detects adjacent histogram bin imbalances caused by embedding
+4. **RS (Regular-Singular) Analysis** — Detects the impact of LSB flipping on coefficient smoothness
+5. **LSB Randomness Test** — Runs test for randomness of LSB sequences
 
-### 自适应权重
+### Adaptive Weights
 
-根据可用系数数量动态调整各策略权重：
-- **小图片** (< 5000 系数)：chi2 20% + LSB chi2 25% + 不对称性 25% + RS 20% + 随机性 10%
-- **大图片** (>= 5000 系数)：chi2 35% + LSB chi2 20% + 不对称性 20% + RS 15% + 随机性 10%
+Strategy weights are dynamically adjusted based on available coefficient count:
+- **Small images** (< 5000 coefficients): chi2 20% + LSB chi2 25% + asymmetry 25% + RS 20% + randomness 10%
+- **Large images** (>= 5000 coefficients): chi2 35% + LSB chi2 20% + asymmetry 20% + RS 15% + randomness 10%
 
-### chi2 修复
+### chi2 Fixes
 
-修复了 `chi2_test` 中的 nan 问题：
-- `discard` 参数类型兼容 ratio 和 count
-- discard 值 clamp 到 `[0, 1]`，防止负数/nan
-- 添加 nan/inf 防护，返回 `0.0`
+Fixed NaN issues in `chi2_test`:
+- `discard` parameter type compatibility for ratios and counts
+- Clamp discard values to `[0, 1]`, preventing negative/NaN
+- Added NaN/Inf guards returning `0.0`
 
-## 支持的隐写类型
+## Supported Steganography Types
 
-| 隐写工具 | 检测 | 破解 | 擦除 | 说明 |
-|---------|------|------|------|------|
-| JSteg   | 是   | 是   | -    | LSB 替换非零 AC 系数 |
-| Outguess| 是   | 是   | -    | LSB 替换，保留统计特性（已优化小图片检测） |
-| JPHide  | 是   | 是   | 是   | Blowfish 加密，LSB 嵌入 |
-| Invisible Secrets | 是 | - | - | 类似 JSteg 的 LSB 嵌入 |
-| F5      | 是   | -    | -    | 矩阵编码 + 置换 |
+| Stego Tool | Detection | Cracking | Removal | Description |
+|-----------|-----------|----------|---------|-------------|
+| JSteg   | Yes   | Yes   | -    | LSB replacement of non-zero AC coefficients |
+| Outguess| Yes   | Yes   | -    | LSB replacement preserving statistical properties (optimized for small images) |
+| JPHide  | Yes   | Yes   | Yes   | Blowfish encryption with LSB embedding |
+| Invisible Secrets | Yes | - | - | LSB embedding similar to JSteg |
+| F5      | Yes   | -    | -    | Matrix encoding + permutation |
 
-## 项目结构
+## Project Structure
 
 ```
 stegdetect-py/
-├── pyproject.toml              # 项目配置和依赖（uv 管理，无需打包）
+├── pyproject.toml              # Project config and dependencies (uv-managed, no packaging)
 ├── README.md
-├── stegdetect.py               # 检测入口（uv run stegdetect.py）
-├── stegbreak.py                # 破解入口（uv run stegbreak.py）
-├── stegcompare.py              # 对比入口（uv run stegcompare.py）
-├── stegdeimage.py              # 擦除入口（uv run stegdeimage.py）
+├── stegdetect.py               # Detection entry-point (uv run stegdetect.py)
+├── stegbreak.py                # Cracking entry-point (uv run stegbreak.py)
+├── stegcompare.py              # Comparison entry-point (uv run stegcompare.py)
+├── stegdeimage.py              # Removal entry-point (uv run stegdeimage.py)
 └── stegdetect/
-    ├── __init__.py              # 包初始化
-    ├── cli.py                   # stegdetect 命令行逻辑
-    ├── jpeg_dct.py              # JPEG 解析与 DCT 系数提取
-    ├── dct.py                   # DCT/IDCT 变换
-    ├── detectors.py             # 隐写检测算法（卡方分析）
-    ├── histogram.py             # DCT 系数直方图与统一化
-    ├── chi2.py                  # 卡方检验
-    ├── discrimination.py         # Fisher LDA 分类器
-    ├── extraction.py            # 特征提取变换
-    ├── f5.py                    # F5 检测（重压缩分析）
-    ├── stegbreak.py             # 密码字典攻击核心
-    ├── stegbreak_cli.py         # stegbreak 命令行逻辑
-    ├── stegcompare_cli.py       # stegcompare 命令行逻辑
-    ├── stegdeimage_cli.py       # stegdeimage 命令行逻辑
+    ├── __init__.py              # Package initialization
+    ├── cli.py                   # stegdetect CLI logic
+    ├── jpeg_dct.py              # JPEG parsing and DCT coefficient extraction
+    ├── dct.py                   # DCT/IDCT transforms
+    ├── detectors.py             # Steganalysis detection algorithms (chi-square analysis)
+    ├── histogram.py             # DCT coefficient histograms and unification
+    ├── chi2.py                  # Chi-square test
+    ├── discrimination.py         # Fisher LDA classifier
+    ├── extraction.py            # Feature extraction transforms
+    ├── f5.py                    # F5 detection (recompression analysis)
+    ├── stegbreak.py             # Password dictionary attack core
+    ├── stegbreak_cli.py         # stegbreak CLI logic
+    ├── stegcompare_cli.py       # stegcompare CLI logic
+    ├── stegdeimage_cli.py       # stegdeimage CLI logic
     └── crypto/
         ├── __init__.py
-        ├── arc4.py              # ARC4 (RC4) 流密码
-        ├── blowfish.py          # Blowfish 分组密码
-        └── md5.py               # MD5 哈希
+        ├── arc4.py              # ARC4 (RC4) stream cipher
+        ├── blowfish.py          # Blowfish block cipher
+        └── md5.py               # MD5 hash
 ```
 
-## 依赖
+## Dependencies
 
-依赖由 uv 根据 `pyproject.toml` 自动管理，无需手动安装。
+Dependencies are automatically managed by uv based on `pyproject.toml` — no manual installation needed.
 
-**核心依赖：**
+**Core dependencies:**
 
 - Python >= 3.9
 - Pillow >= 9.0
 - NumPy >= 1.22
 - SciPy >= 1.8
 
-**可选依赖：**
+**Optional dependencies:**
 
-- pycryptodome >= 3.15（密码破解功能，通过 `uv run --extra crack` 启用）
+- pycryptodome >= 3.15 (password cracking, enabled via `uv run --extra crack`)
 
-## 许可证
+## License
 
 BSD-3-Clause
 
-基于 Niels Provos 的原始 stegdetect 实现（C 语言版本）重写。
+Based on a rewrite of Niels Provos' original stegdetect implementation (C language version).
