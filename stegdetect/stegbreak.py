@@ -520,7 +520,12 @@ def _og_validate(out: bytes, seed: int, enclen: int, nbits: int):
         return ('reject', 'empty')
     # ECC mode: a successful golay decode (non-empty, valid padding) is a strong
     # signal that the password was correct.
-    if len(out) >= 4 and (b'flag' in out.lower() or b'ctf' in out.lower() or b'{' in out):
+    # NOTE: a bare "{" is NOT a reliable magic marker -- random long byte
+    # strings almost always contain the 0x7B byte, which caused clean images /
+    # wrong passwords to false-positive.  Require an actual flag token
+    # ("flag"/"ctf", case-insensitive) instead.
+    low = out.lower()
+    if len(out) >= 4 and (b'flag' in low or b'ctf' in low):
         return ('high', 'magic/printable')
     printable = sum(1 for b in out if 32 <= b < 127 or b in (9, 10, 13))
     ratio = printable / len(out) if out else 0
