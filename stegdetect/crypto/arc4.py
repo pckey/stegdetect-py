@@ -29,6 +29,23 @@ class ARC4:
             j = (j + self._s[i] + self._key[i % key_len]) & 0xFF
             self._s[i], self._s[j] = self._s[j], self._s[i]
 
+    def _addrandom(self, dat: bytes, datlen: int) -> None:
+        """Mix additional entropy into the S-box (OutGuess/ARC4 convention).
+
+        Mirrors Niels Provos' arc.c arc4_addrandom(): pre-decrement i, then run
+        a second KSA-like pass over the 256-byte state using dat as the key.
+        OutGuess uses this to fold the 16-byte MD5 digest in during key setup
+        and to re-seed the iterator with the recovered seed.
+        """
+        if datlen == 0:
+            return
+        self._i = (self._i - 1) & 0xFF
+        for n in range(256):
+            self._i = (self._i + 1) & 0xFF
+            si = self._s[self._i]
+            self._j = (self._j + si + dat[n % datlen]) & 0xFF
+            self._s[self._i], self._s[self._j] = self._s[self._j], self._s[self._i]
+
     def get_byte(self) -> int:
         """Generate one byte via PRGA.
 
