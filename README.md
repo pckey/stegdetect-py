@@ -158,6 +158,28 @@ if result and result.success:
     print(f"Details: {result.details}")
 ```
 
+#### OutGuess (direct `crack_outguess`)
+
+For OutGuess 0.2 you can also probe a single candidate password directly with
+`crack_outguess`. The target is built with `OutguessTarget.prepare`, which decodes
+the JPEG and extracts the DCT coefficient stream internally — no manual setup
+required. (The bundled OutGuess cracker was fixed to derive the two ARC4 streams
+as `MD5("Encryption"+pw)` / `MD5("Seeding"+pw)` and to read the admin header via
+the Seeding iterator, fixing earlier false-positives on clean images.)
+
+```python
+from stegdetect.stegbreak import OutguessTarget, crack_outguess
+
+target = OutguessTarget.prepare("image.jpg")
+result = crack_outguess(target, "secret123")
+
+if result and result.success:
+    print(f"Password: {result.password}")
+    print(f"Recovered data: {result.data}")
+else:
+    print("password not matched (or image is clean)")
+```
+
 ### DCT Coefficient Extraction
 
 ```python

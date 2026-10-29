@@ -158,6 +158,27 @@ if result and result.success:
     print(f"详情: {result.details}")
 ```
 
+#### OutGuess（直接调用 crack_outguess）
+
+OutGuess 0.2 也可以直接用 `crack_outguess` 验证单个候选口令。目标对象由
+`OutguessTarget.prepare` 构建——它会解码 JPEG 并自动提取 DCT 系数流，无需手动准备。
+（内置的 OutGuess 破解器已修复：正确派生两条 ARC4 流 `MD5("Encryption"+密码)` /
+`MD5("Seeding"+密码)`，并通过 Seeding 迭代器读取 admin 头，同时消除了在干净图上
+的误报。）
+
+```python
+from stegdetect.stegbreak import OutguessTarget, crack_outguess
+
+target = OutguessTarget.prepare("image.jpg")
+result = crack_outguess(target, "secret123")
+
+if result and result.success:
+    print(f"密码: {result.password}")
+    print(f"恢复数据: {result.data}")
+else:
+    print("口令不匹配（或图像本身干净）")
+```
+
 ### DCT 系数提取
 
 ```python
