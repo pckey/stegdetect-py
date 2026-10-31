@@ -122,6 +122,23 @@ Saved to output.jpg
 Note: Full lossless DCT restoration requires JPEG re-encoding infrastructure
 ```
 
+### steglsb — PNG LSB Steganography Extractor
+
+Extracts data hidden in the least significant bits (LSB) of PNG pixel channels. Unlike the DCT-based tools above, this reads raw pixels, packs the bits into a byte stream, and auto-detects `ISCC{...}` / `flag{...}` / `CTF{...}` flags.
+
+```bash
+# Extract with defaults (RGB channels, 3-bit offset, MSB-first)
+uv run steglsb.py --png stego.png
+
+# Decrypt a ZipCrypto archive first, then extract
+uv run steglsb.py --zip challenge.zip --password secret
+
+# Tune extraction (channels / start offset / bit order) and dump raw payload
+uv run steglsb.py --channels 0,1,2 --start 3 --msb --out payload.bin
+```
+
+Options: `--png`, `--zip`, `--password`, `--channels` (default `0,1,2`), `--start` (default `3`), `--lsb` (LSB-first instead of default MSB-first), `--out`.
+
 ## Python API
 
 ### Steganalysis Detection

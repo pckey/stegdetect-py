@@ -122,6 +122,23 @@ Saved to output.jpg
 Note: Full lossless DCT restoration requires JPEG re-encoding infrastructure
 ```
 
+### steglsb -- PNG LSB 隐写提取
+
+从 PNG 像素通道的最低有效位（LSB）中提取隐藏数据。与上面基于 DCT 的工具不同，本工具直接读取原始像素、按比特序打包成字节流，并自动识别 `ISCC{...}` / `flag{...}` / `CTF{...}` 形式的 flag。
+
+```bash
+# 使用默认参数提取（RGB 通道、偏移 3 bit、MSB-first）
+uv run steglsb.py --png stego.png
+
+# 先解密 ZipCrypto 压缩包再提取
+uv run steglsb.py --zip challenge.zip --password secret
+
+# 调整提取参数（通道 / 起始偏移 / 比特序）并导出原始字节流
+uv run steglsb.py --channels 0,1,2 --start 3 --msb --out payload.bin
+```
+
+可选参数：`--png`、`--zip`、`--password`、`--channels`（默认 `0,1,2`）、`--start`（默认 `3`）、`--lsb`（使用 LSB-first 而非默认 MSB-first）、`--out`。
+
 ## Python API
 
 ### 隐写检测
